@@ -1,44 +1,56 @@
 let selectedNumber; 
+let minRange = 1;
+let maxRange = 100;
+let maxAttempts = 10;
+let attempts = 0;
+let currentLevel=1;
+let startTime, endTime;
+
 const selectedNumberDisplay = document.getElementById('selected_number_display');
 const guessedNumberDisplay = document.getElementById('guessed_number_display');
-const submit = document.getElementById('submit'); 
+const submit = document.getElementById('submit');
+const nextLevel= document.getElementById('continue');
 
-function getRandomNumber() {
-    selectedNumber = Math.floor(Math.random() * 10) + 1; 
+function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function startNewLevel() {
+    maxRange = Math.max(minRange + 10, Math.floor(maxRange * 0.8)); 
+    selectedNumber = getRandomNumber(minRange, maxRange); 
+    attempts = 0;
+    currentLevel++;
+    selectedNumberDisplay.textContent = `Welcome to Level ${currentLevel}: Guess a number between ${minRange} and ${maxRange}.`;
+    guessedNumberDisplay.textContent = "";
+    startTime = new Date();
 }
 
 function guessNumber() {
-    let attempts = 0;
+    let startTime = new Date();
     submit.addEventListener('click', () => {
         const guessedNumber = Number(document.getElementById('guessed_number').value);
-        if (guessedNumber < 1 || guessedNumber > 10) {
-            guessedNumberDisplay.textContent = "Choose numbers between [1, 10]";
+        if (guessedNumber < minRange || guessedNumber > maxRange) {
+            guessedNumberDisplay.textContent = `Choose a number between ${minRange} and ${maxRange}.`;
             return;
         }
-        if (equivalent(guessedNumber, selectedNumber)) {
-            guessedNumberDisplay.textContent = `Correct! It took you ${attempts + 1} attempts.`;
+        if (guessedNumber === selectedNumber) {
+            let endTime = new Date();
+            guessedNumberDisplay.textContent = `Correct! It took you ${attempts + 1} attempts.Elapsed time: ${endTime - startTime}ms`;
             selectedNumberDisplay.textContent = `The number was: ${selectedNumber}`;
         } else {
             attempts++;
-            if (attempts >= 5) {
-                guessedNumberDisplay.textContent = "Game over! You've used all attempts.";
-                selectedNumberDisplay.textContent = `The number was: ${selectedNumber}`;
-            }
+            guessedNumberDisplay.textContent = guessedNumber < selectedNumber ? "Too low" : "Too high";
         }
     });
 }
 
-function equivalent(guessedNumber, selectedNumber) {
-    if (guessedNumber === selectedNumber) {
-        return true;
-    }
-    if (guessedNumber < selectedNumber) {
-        guessedNumberDisplay.textContent = "Too low";
-    } else {
-        guessedNumberDisplay.textContent = "Too high";
-    }
-    return false;
+submit.addEventListener('click', guessNumber);
+nextLevel.addEventListener('click', startNewLevel);
+function initializeGame() {
+    selectedNumber = getRandomNumber(minRange, maxRange);
+    startTime = new Date();
+    selectedNumberDisplay.textContent = `Guess a number between ${minRange} and ${maxRange}.`;
 }
-
-getRandomNumber();
+initializeGame();
 guessNumber();
+
